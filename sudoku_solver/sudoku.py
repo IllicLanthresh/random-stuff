@@ -22,7 +22,7 @@ class Sudoku(MutableMapping):
     def __len__(self):
         return NotImplementedError
 
-    def __iter__(self) -> Iterator[str, typing.List[int]]:
+    def __iter__(self) -> Iterator[typing.Tuple[str, typing.List[int]]]:
         for k, v in self.board.items():
             yield k, v
 
