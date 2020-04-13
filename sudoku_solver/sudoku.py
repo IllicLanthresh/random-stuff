@@ -2,7 +2,6 @@ import math
 import typing
 from collections.abc import MutableMapping
 from turtle import Turtle, Screen
-from typing import Iterator
 
 CANVAS_MARGIN = 10
 COLUMN_NAMES = 'ABCDEFGHI'
@@ -10,9 +9,14 @@ ROW_NAMES = '123456789'
 
 
 class Sudoku(MutableMapping):
-    def empty_cells(self) -> Iterator[str]:
+    def empty_cells(self) -> typing.Iterator[str]:
         for k, v in self.board.items():
             if v == [0]:
+                yield k
+
+    def filled_cells(self) -> typing.Iterator[str]:
+        for k, v in self.board.items():
+            if v != [0]:
                 yield k
 
     @property
@@ -20,19 +24,19 @@ class Sudoku(MutableMapping):
         return self._editable_cells
 
     def __len__(self):
-        return NotImplementedError
+        raise NotImplementedError
 
-    def __iter__(self) -> Iterator[typing.Tuple[str, typing.List[int]]]:
+    def __iter__(self) -> typing.Iterator[typing.Tuple[str, typing.List[int]]]:
         for k, v in self.board.items():
             yield k, v
 
     def __delitem__(self, key: str):
-        return NotImplementedError
+        raise NotImplementedError
 
     def __init__(self, board: typing.List[typing.List[int]] = None):
         if board is None:
             board = [[0 for _ in range(9)] for _ in range(9)]
-        self._editable_cells = []
+        self._editable_cells: typing.List[str] = []
         self.board = self._board_from_matrix(board)
         self.display = SudokuDisplay(self.board)
 
