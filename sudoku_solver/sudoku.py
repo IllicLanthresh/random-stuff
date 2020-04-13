@@ -1,26 +1,50 @@
-from turtle import Turtle, Screen
-import typing
 import math
+import typing
+from collections.abc import MutableMapping
+from turtle import Turtle, Screen
+from typing import Iterator
 
 CANVAS_MARGIN = 10
 COLUMN_NAMES = 'ABCDEFGHI'
 ROW_NAMES = '123456789'
 
 
-class Sudoku:
+class Sudoku(MutableMapping):
+    def empty_cells(self) -> Iterator[str]:
+        for k, v in self.board.items():
+            if v == [0]:
+                yield k
+
+    @property
+    def editable_cells(self):
+        return self._editable_cells
+
+    def __len__(self):
+        return NotImplementedError
+
+    def __iter__(self) -> Iterator[str, typing.List[int]]:
+        for k, v in self.board.items():
+            yield k, v
+
+    def __delitem__(self, key: str):
+        return NotImplementedError
+
     def __init__(self, board: typing.List[typing.List[int]] = None):
         if board is None:
             board = [[0 for _ in range(9)] for _ in range(9)]
-        self.board = Sudoku._list_matrix_to_dict_matrix(board)
+        self._editable_cells = []
+        self.board = self._board_from_matrix(board)
         self.display = SudokuDisplay(self.board)
 
-    @staticmethod
-    def _list_matrix_to_dict_matrix(matrix: typing.List[typing.List[int]]) -> typing.Dict[str, typing.List[int]]:
+    def _board_from_matrix(self, matrix: typing.List[typing.List[int]]) -> typing.Dict[str, typing.List[int]]:
         board = dict()
         for row, row_id in zip(matrix, ROW_NAMES):
             for num, col_id in zip(row, COLUMN_NAMES):
+                key = "".join((col_id, row_id))
                 if 0 <= num <= 9:
-                    board["".join([col_id, row_id])] = [num]
+                    if num == 0:
+                        self._editable_cells.append(key)
+                    board[key] = [num]
         return board
 
     def __getitem__(self, key: str):
@@ -42,7 +66,7 @@ class SudokuDisplay:
         self.screen = self._setup_screen()
         self._draw_base_board()
         self._instantiate_drawers()
-        self.write_matrix(board)
+        self.write_board(board)
 
     def _draw_base_board(self):
         pen = Turtle()
@@ -166,6 +190,6 @@ class SudokuDisplay:
         pos = pos.upper()
         self._writers[pos].clear()
 
-    def write_matrix(self, matrix: typing.Dict[str, typing.List[int]]):
-        for k, v in matrix.items():
+    def write_board(self, board: typing.Dict[str, typing.List[int]]):
+        for k, v in board.items():
             self.write_at(v, k)
