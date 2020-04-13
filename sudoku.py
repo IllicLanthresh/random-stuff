@@ -10,20 +10,29 @@ ROW_NAMES = '123456789'
 class Sudoku:
     def __init__(self, board: typing.List[typing.List[int]] = None):
         if board is None:
-            self.board = [[0 for _ in range(9)] for _ in range(9)]
-        else:
-            self.board = board
+            board = [[0 for _ in range(9)] for _ in range(9)]
+        self.board = Sudoku._list_matrix_to_dict_matrix(board)
         self.display = SudokuDisplay(self.board)
 
-    def __getitem__(self, key):
-        pass
+    @staticmethod
+    def _list_matrix_to_dict_matrix(matrix: typing.List[typing.List[int]]) -> typing.Dict[str, typing.List[int]]:
+        board = dict()
+        for row, row_id in zip(matrix, ROW_NAMES):
+            for num, col_id in zip(row, COLUMN_NAMES):
+                if 0 <= num <= 9:
+                    board["".join([col_id, row_id])] = [num]
+        return board
 
-    def __setitem__(self, key, value):
-        pass
+    def __getitem__(self, key: str):
+        return self.board.copy().get(key)
+
+    def __setitem__(self, key: str, value: typing.List[int]):
+        self.board[key] = value
+        self.display.write_at(value, key)
 
 
 class SudokuDisplay:
-    def __init__(self, board: typing.List[typing.List[int]], size=900, big_pen=3, small_pen=1):
+    def __init__(self, board: typing.Dict[str, typing.List[int]], size=900, big_pen=3, small_pen=1):
         self.small_pen = small_pen
         self.big_pen = big_pen
         self.size = size
@@ -106,10 +115,11 @@ class SudokuDisplay:
     def write_at(self, nums: typing.Union[int, typing.List[int]], pos: str):
         pos: str = pos.upper()
         self._writers[pos].clear()
-        if nums:
-            if isinstance(nums, int):
-                nums = [nums]
-            self._get_best_layout(nums)(self._writers[pos], nums)
+        if isinstance(nums, int):
+            nums = [nums]
+        if 0 in nums:
+            nums.remove(0)
+        self._get_best_layout(nums)(self._writers[pos], nums)
 
     def _layout1(self, writer: Turtle, nums: typing.List[int]):
         writer.write("".join(map(str, nums)), align='center', font=('Arial', int(self._font_size), 'normal'))
@@ -119,11 +129,11 @@ class SudokuDisplay:
         original_y = writer.ycor()
         y_center = original_y + self._font_offset
         y_top = y_center + step_size / 2
-        y_final = y_top - (2 * step_size / 3) - self._font_offset/2
+        y_final = y_top - (2 * step_size / 3) - self._font_offset / 2
         writer.sety(y_final)
         nums1 = "".join(map(str, nums[:math.ceil(len(nums) / 2)]))
         nums2 = "".join(map(str, nums[math.ceil(len(nums) / 2):]))
-        writer.write(f'{nums1}\n{nums2}', align='center', font=('Arial', int(self._font_size*0.5), 'normal'))
+        writer.write(f'{nums1}\n{nums2}', align='center', font=('Arial', int(self._font_size * 0.5), 'normal'))
         writer.sety(original_y)
 
     def _layout3(self, writer: Turtle, nums: typing.List[int]):
@@ -134,14 +144,15 @@ class SudokuDisplay:
         y_final = y_top - (3 * step_size / 4) - self._font_offset / 3
         writer.sety(y_final)
         nums1 = "".join(map(str, nums[:math.ceil(len(nums) / 3)]))
-        nums2 = "".join(map(str, nums[math.ceil(len(nums)/3):math.ceil(2*len(nums)/3)]))
-        nums3 = "".join(map(str, nums[math.ceil(2*len(nums)/3):]))
-        writer.write(f'{nums1}\n{nums2}\n{nums3}', align='center', font=('Arial', int(self._font_size*0.45), 'normal'))
+        nums2 = "".join(map(str, nums[math.ceil(len(nums) / 3):math.ceil(2 * len(nums) / 3)]))
+        nums3 = "".join(map(str, nums[math.ceil(2 * len(nums) / 3):]))
+        writer.write(f'{nums1}\n{nums2}\n{nums3}', align='center',
+                     font=('Arial', int(self._font_size * 0.45), 'normal'))
         writer.sety(original_y)
 
     def _get_best_layout(self, nums: typing.List[int]) -> typing.Callable[[Turtle, typing.List[int]], None]:
         func = None
-        if len(nums) <=3:
+        if len(nums) <= 3:
             func = self._layout1
         elif len(nums) <= 6:
             func = self._layout2
@@ -158,8 +169,6 @@ class SudokuDisplay:
         pos = pos.upper()
         self._writers[pos].clear()
 
-    def write_matrix(self, matrix: typing.List[typing.List[typing.Union[int, typing.List[int]]]]):
-        for row, row_id in zip(matrix, ROW_NAMES):
-            for num, col_id in zip(row, COLUMN_NAMES):
-                if 0 <= num <= 9:
-                    self.write_at(num, "".join([col_id, row_id]))
+    def write_matrix(self, matrix: typing.Dict[str, typing.List[int]]):
+        for k, v in matrix.items():
+            self.write_at(v, k)
