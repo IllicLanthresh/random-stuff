@@ -149,7 +149,6 @@ class SudokuDisplay:
         writer.sety(original_y)
 
     def _get_best_layout(self, nums: typing.List[int]) -> typing.Callable[[Turtle, typing.List[int]], None]:
-        func = None
         if len(nums) <= 3:
             func = self._layout1
         elif len(nums) <= 6:
