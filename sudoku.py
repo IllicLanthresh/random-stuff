@@ -1,5 +1,6 @@
 from turtle import Turtle, Screen
 import typing
+import math
 
 CANVAS_MARGIN = 10
 COLUMN_NAMES = 'ABCDEFGHI'
@@ -112,18 +113,32 @@ class SudokuDisplay:
             self._get_best_layout(len(nums))(self._writers[pos], nums)
 
     def _layout_1(self, writer: Turtle, nums: typing.List[int]):
-        writer.write(nums, align='center', font=('Arial', int(self._font_size), 'normal'))
+        writer.write("".join(map(str, nums)), align='center', font=('Arial', int(self._font_size), 'normal'))
 
     def _layout2(self, writer: Turtle, nums: typing.List[int]):
         step_size = self.size / 9
-        y_center = writer.ycor() + self._font_offset
+        original_y = writer.ycor()
+        y_center = original_y + self._font_offset
         y_top = y_center + step_size / 2
-        y_final = y_top - 2 * step_size / 3
-        ######################################################################################################
-        writer.sety(writer.ycor()-self._font_size)
+        y_final = y_top - (2 * step_size / 3) - self._font_offset/2
+        writer.sety(y_final)
+        nums1 = "".join(map(str, nums[:math.ceil(len(nums) / 2)]))
+        nums2 = "".join(map(str, nums[math.ceil(len(nums) / 2):]))
+        writer.write(f'{nums1}\n{nums2}', align='center', font=('Arial', int(self._font_size), 'normal'))
+        writer.sety(original_y)
 
     def _layout3(self, writer: Turtle, nums: typing.List[int]):
-        pass
+        step_size = self.size / 9
+        original_y = writer.ycor()
+        y_center = original_y + self._font_offset
+        y_top = y_center + step_size / 2
+        y_final = y_top - (3 * step_size / 4) - self._font_offset / 3
+        writer.sety(y_final)
+        nums1 = "".join(map(str, nums[:math.ceil(len(nums) / 3)]))
+        nums2 = "".join(map(str, nums[math.ceil(len(nums)/3):math.ceil(2*len(nums)/3)]))
+        nums3 = "".join(map(str, nums[math.ceil(2*len(nums)/3):]))
+        writer.write(f'{nums1}\n{nums2}\n{nums3}', align='center', font=('Arial', int(self._font_size), 'normal'))
+        writer.sety(original_y)
 
     def _get_best_layout(self, le: int) -> typing.Callable[[Turtle, typing.List[int]], None]:
         return self._layout_1
