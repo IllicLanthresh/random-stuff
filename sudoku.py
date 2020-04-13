@@ -112,11 +112,9 @@ class SudokuDisplay:
                 self._writers["".join([col, row])] = writer
         self.screen.update()
 
-    def write_at(self, nums: typing.Union[int, typing.List[int]], pos: str):
+    def write_at(self, nums: typing.List[int], pos: str):
         pos: str = pos.upper()
         self._writers[pos].clear()
-        if isinstance(nums, int):
-            nums = [nums]
         if 0 in nums:
             nums.remove(0)
         self._get_best_layout(nums)(self._writers[pos], nums)
