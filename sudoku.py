@@ -9,8 +9,11 @@ ROW_NAMES = '123456789'
 
 class Sudoku:
     def __init__(self, board: typing.List[typing.List[int]] = None):
-        self.board = board
-        self.display = SudokuDisplay(board)
+        if board is None:
+            self.board = [[0 for _ in range(9)] for _ in range(9)]
+        else:
+            self.board = board
+        self.display = SudokuDisplay(self.board)
 
     def __getitem__(self, key):
         pass
@@ -21,10 +24,6 @@ class Sudoku:
 
 class SudokuDisplay:
     def __init__(self, board: typing.List[typing.List[int]], size=900, big_pen=3, small_pen=1):
-        if board is None:
-            self.board = [[0 for _ in range(9)] for _ in range(9)]
-        else:
-            self.board = board
         self.small_pen = small_pen
         self.big_pen = big_pen
         self.size = size
@@ -34,7 +33,7 @@ class SudokuDisplay:
         self.screen = self._setup_screen()
         self._draw_base_board()
         self._instantiate_drawers()
-        self.write_matrix(self.board)
+        self.write_matrix(board)
 
     def _draw_base_board(self):
         pen = Turtle()
@@ -110,9 +109,9 @@ class SudokuDisplay:
         if nums:
             if isinstance(nums, int):
                 nums = [nums]
-            self._get_best_layout(len(nums))(self._writers[pos], nums)
+            self._get_best_layout(nums)(self._writers[pos], nums)
 
-    def _layout_1(self, writer: Turtle, nums: typing.List[int]):
+    def _layout1(self, writer: Turtle, nums: typing.List[int]):
         writer.write("".join(map(str, nums)), align='center', font=('Arial', int(self._font_size), 'normal'))
 
     def _layout2(self, writer: Turtle, nums: typing.List[int]):
@@ -124,7 +123,7 @@ class SudokuDisplay:
         writer.sety(y_final)
         nums1 = "".join(map(str, nums[:math.ceil(len(nums) / 2)]))
         nums2 = "".join(map(str, nums[math.ceil(len(nums) / 2):]))
-        writer.write(f'{nums1}\n{nums2}', align='center', font=('Arial', int(self._font_size), 'normal'))
+        writer.write(f'{nums1}\n{nums2}', align='center', font=('Arial', int(self._font_size*0.5), 'normal'))
         writer.sety(original_y)
 
     def _layout3(self, writer: Turtle, nums: typing.List[int]):
@@ -137,11 +136,18 @@ class SudokuDisplay:
         nums1 = "".join(map(str, nums[:math.ceil(len(nums) / 3)]))
         nums2 = "".join(map(str, nums[math.ceil(len(nums)/3):math.ceil(2*len(nums)/3)]))
         nums3 = "".join(map(str, nums[math.ceil(2*len(nums)/3):]))
-        writer.write(f'{nums1}\n{nums2}\n{nums3}', align='center', font=('Arial', int(self._font_size), 'normal'))
+        writer.write(f'{nums1}\n{nums2}\n{nums3}', align='center', font=('Arial', int(self._font_size*0.45), 'normal'))
         writer.sety(original_y)
 
-    def _get_best_layout(self, le: int) -> typing.Callable[[Turtle, typing.List[int]], None]:
-        return self._layout_1
+    def _get_best_layout(self, nums: typing.List[int]) -> typing.Callable[[Turtle, typing.List[int]], None]:
+        func = None
+        if len(nums) <=3:
+            func = self._layout1
+        elif len(nums) <= 6:
+            func = self._layout2
+        else:
+            func = self._layout3
+        return func
 
     def clear(self):
         for writer in self._writers.values():
