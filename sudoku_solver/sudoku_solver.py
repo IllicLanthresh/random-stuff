@@ -1,4 +1,5 @@
 import typing
+import time
 from itertools import chain
 from sudoku import Sudoku, COLUMN_NAMES, ROW_NAMES
 
@@ -22,6 +23,7 @@ class SudokuSolver:
                     no_go_nums.add(self.sudoku.board[_][0])
             possible_nums = {_ for _ in range(1, 10)} - no_go_nums
             self.sudoku[cell] = [*possible_nums]
+            time.sleep(0.01)
 
     def quadrant_cells(self, cell: str) -> typing.Iterator[str]:
         col_group = COLUMN_NAMES.find(cell[0]) * 3 // 9
@@ -43,3 +45,15 @@ class SudokuSolver:
         for other_cell in self.sudoku.filled_cells():
             if cell[1] == other_cell[1] and cell != other_cell:
                 yield other_cell
+
+b=[[0,2,9,0,5,3,0,0,0],
+[4,8,3,0,0,0,0,2,0],
+[0,6,5,0,0,0,0,0,3],
+[2,5,0,9,0,0,0,1,0],
+[0,0,0,0,3,8,6,0,0],
+[0,3,0,0,6,5,4,0,0],
+[0,0,0,6,4,2,5,9,0],
+[0,0,4,0,1,7,0,0,0],
+[0,0,0,5,0,0,0,0,0]]
+s=SudokuSolver(b)
+s.solve()
