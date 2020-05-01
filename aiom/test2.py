@@ -1,6 +1,8 @@
-from timeit import default_timer as timer
+from math import ceil
 import asyncio
 import aiomultiprocess
+
+from timeit import default_timer as timer
 
 
 class Test:
@@ -50,10 +52,22 @@ class AsyncTest(Test):
 
 
 class PoolTest(Test):
+    POOL_COUNT = 4
+    METHOD = 'spawn'
+
     def __init__(self):
         super().__init__()
-        aiomultiprocess.set_start_method('spawn')
-        self.pool_count = 4
+        aiomultiprocess.set_start_method(PoolTest.METHOD)
+        self.chunks = self.make_chunks()
+
+    def make_chunks(self):
+        chunks = []
+        max_chunk_size = ceil(len(self.number_list) / PoolTest.POOL_COUNT)
+        for i in range(PoolTest.POOL_COUNT):
+            chunk = self.number_list[i * max_chunk_size:(i + 1) * max_chunk_size]
+            if chunk:
+                self.chunks.append(chunk)
+        return chunks
 
     def remove_if_prime(self, num):
         for div in range(2, num):
@@ -61,12 +75,9 @@ class PoolTest(Test):
                 self.number_list.remove(num)
                 break
 
-    def chunk_list(self):
-        pass
-
     def pool_stress_prime(self):
 
-        for _ in range(self.pool_count):
+        for _ in range(PoolTest.POOL_COUNT):
             pools = []
             async with aiomultiprocess.Pool() as pool:
                 print(await pool.map(get, urls))
