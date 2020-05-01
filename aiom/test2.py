@@ -1,54 +1,50 @@
 from timeit import default_timer as timer
 import asyncio
-import functools
 import aiomultiprocess
 
-from math import pi, tan, atan
-from random import random
 
 aiomultiprocess.set_start_method('spawn')
 
 
-async def async_append_if_prime(num, primes):
-    # print(num, end=', ')
-    append = True
+def remove_if_prime(num, number_list):
     for div in range(2, num):
         if not num % div:
-            append = False
+            number_list.remove(num)
             break
-    if append:
-        primes.append(num)
 
 
-async def async_stress_prime(r):
+def stress_prime(number_list):
     start = timer()
-    primes = []
-    tasks = [asyncio.ensure_future(async_append_if_prime(num, primes)) for num in range(2, r + 1)]
+    for num in number_list.copy():
+        remove_if_prime(num, number_list)
+    end = timer()
+    print(end - start)
+    return number_list
+
+
+async def async_stress_prime(number_list):
+    start = timer()
+    tasks = [asyncio.coroutine(remove_if_prime)(num, number_list) for num in number_list.copy()]
     await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
     end = timer()
     print(end - start)
-    return primes
+    return number_list
 
 
-def stress_prime(r):
-    start = timer()
-    primes = []
-    for num in range(2, r + 1):
-        # print(num, end=', ')
-        primes.append(num)
-        for div in range(2, num):
-            if not num % div:
-                primes.remove(num)
-                break
-    end = timer()
-    print(end - start)
-    return primes
+# def chunk(l, n):
+#     pass
+
+# def pool_stress_prime(r, pool_count):
+#
+#     for _ in range(pool_count):
+#         pools = []
+#         async with aiomultiprocess.Pool() as pool:
+#             print(await pool.map(get, urls))
 
 
-BIG_NUMBER = 100000
-print(stress_prime(BIG_NUMBER))
-print(asyncio.run(async_stress_prime(BIG_NUMBER)))
+BIG_NUMBER = 10000
+POOL_COUNT = 4
 
-# for _ in range(BIG_NUMBER//100):
-#     async with aiomultiprocess.Pool() as pool:
-#         print(await pool.map(get, urls))
+print(*stress_prime(list(range(2, BIG_NUMBER + 1))), sep=', ')
+print(*asyncio.run(async_stress_prime(list(range(2, BIG_NUMBER + 1)))), sep=', ')
+# print(*pool_stress_prime(BIG_NUMBER, POOL_COUNT), sep=', ')
