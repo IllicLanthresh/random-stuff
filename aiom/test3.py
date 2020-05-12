@@ -1,4 +1,5 @@
 from math import ceil
+import orjson
 import asyncio
 import aiomultiprocess
 
@@ -6,7 +7,34 @@ from timeit import default_timer as timer
 
 
 class Test:
-    BIG_NUMBER = 100000
+    PAYLOADS = {
+        str: {
+            "empty": "",
+            "small": "SMALLPAYLOAD____" * 10,
+            "medium": "MEDIUMPAYLOAD___" * 100,
+            "big": "BIGPAYLOAD______" * 1000,
+            "huge": "HUGEPAYLOAD_____" * 10000,
+            "killer": "HUGEPAYLOAD_____" * 10000000,
+        },
+        dict: {
+            "empty": {},
+
+            "small": {chr(x): chr(x) * 10 \
+                      for x in range(ord("a"), ord("a") + 10)},
+
+            "medium": {chr(x): chr(x) * 100 \
+                       for x in range(1, 100)},
+
+            "big": {chr(x): chr(x) * 1000 \
+                    for x in range(1, 1000)},
+
+            "huge": {chr(x): chr(x) * 10000 \
+                     for x in range(1, 10000)},
+
+            # "killer": { chr(x): chr(x) * 10000000 \
+            #     for x in range(1, 10000000 ) },
+        }
+    }
 
     def test(self):
         """ Override this method to implement the test start action"""
